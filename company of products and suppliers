@@ -1,0 +1,226 @@
+\\ part 3
+const mysql = require("mysql2");
+const express = require("express");
+const app = express();
+
+const connection = mysql.createConnection({
+    host: "127.0.0.1",
+    port: "3306",
+    user: "root",
+    password: "",
+    database: "company"
+});
+
+connection.query("SELECT * FROM products", (err, results) => {
+    if (err) throw err;
+    console.log(results);
+});
+
+app.use(express.json());
+
+
+app.post("/products", (req, res) => {
+
+    const {
+        ProductID,
+        ProductName,
+        Price,
+        StockQuantity,
+        SupplierID
+    } = req.body;
+
+    const query = `
+        INSERT INTO products
+        (ProductID, ProductName, Price, StockQuantity, SupplierID)
+        VALUES (?, ?, ?, ?, ?)
+    `;
+
+    connection.execute(
+        query,
+        [ProductID, ProductName, Price, StockQuantity, SupplierID],
+        (err, result) => {
+
+            if (err) {
+                console.error("Database Error:", err);
+
+                return res.status(500).json({
+                    error: err.message
+                });
+            }
+
+            console.log("Product inserted successfully:", result);
+
+            return res.status(201).json({
+                message: "Product registered successfully",
+                ProductID: result.insertId
+            });
+        }
+    );
+});
+app.delete("/products/:id", (req, res) => {
+
+    const productId = req.params.id;
+
+    const checkQuery = "SELECT * FROM products WHERE ProductID=?";
+
+    connection.execute(
+        checkQuery,
+        [productId],
+        (err, results) => {
+
+            if (err) {
+                console.error("DB Error", err);
+
+                return res.status(500).json({
+                    error: err.message
+                });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({
+                    message: "Product not Found!"
+                });
+            }
+
+            const deleteQuery =
+                "DELETE FROM products WHERE ProductID=?";
+
+            connection.execute(
+                deleteQuery,
+                [productId],
+                (err, result) => {
+
+                    if (err) {
+                        console.error("DB Error", err);
+
+                        return res.status(500).json({
+                            error: err.message
+                        });
+                    }
+
+                    return res.status(200).json({
+                        message: "Product deleted successfully"
+                    });
+                }
+            );
+        }
+    );
+});
+
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});
+
+
+\\part 4 (suppliers)
+const mysql = require("mysql2");
+const express = require("express");
+const app = express();
+
+const connection = mysql.createConnection({
+    host: "127.0.0.1",
+    port: "3306",
+    user: "root",
+    password: "",
+    database: "company"
+});
+
+connection.query("SELECT * FROM suppliers", (err, results) => {
+    if (err) throw err;
+    console.log(results);
+});
+
+app.use(express.json());
+
+app.post("/suppliers", (req, res) => {
+
+    const {
+        SupplierID,
+        SupplierName,
+        ContactNumber,
+        
+    } = req.body;
+
+    const query = `
+        INSERT INTO suppliers
+        (SupplierID, SupplierName, ContactNumber)
+        VALUES (?, ?, ?)
+    `;
+
+    connection.execute(
+        query,
+        [SupplierID, SupplierName, ContactNumber],
+        (err, result) => {
+
+            if (err) {
+                console.error("Database Error:", err);
+
+                return res.status(500).json({
+                    error: err.message
+                });
+            }
+
+            console.log("supplier inserted successfully:", result);
+
+            return res.status(201).json({
+                message: "supplier registered successfully",
+                supplierId: result.insertId
+            });
+        }
+    );
+});
+app.delete("/suppliers/:id", (req, res) => {
+
+    const supplierId = req.params.id;
+
+    const checkQuery = "SELECT * FROM suppliers WHERE SupplierID=?";
+
+    connection.execute(
+        checkQuery,
+        [supplierId],
+        (err, results) => {
+
+            if (err) {
+                console.error("DB Error", err);
+
+                return res.status(500).json({
+                    error: err.message
+                });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({
+                    message: "supplier not Found!"
+                });
+            }
+
+            const deleteQuery =
+                "DELETE FROM suppliers WHERE SupplierID=?";
+
+            connection.execute(
+                deleteQuery,
+                [supplierId],
+                (err, result) => {
+
+                    if (err) {
+                        console.error("DB Error", err);
+
+                        return res.status(500).json({
+                            error: err.message
+                        });
+                    }
+
+                    return res.status(200).json({
+                        message: "supplier deleted successfully"
+                    });
+                }
+            );
+        }
+    );
+});
+
+
+
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});
