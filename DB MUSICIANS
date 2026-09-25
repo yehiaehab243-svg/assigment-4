@@ -1,0 +1,46 @@
+const mysql = require ("mysql2")
+const express = require("express")
+const app = express();
+
+const connection = mysql.createConnection({
+ host : "127.0.0.1" ,
+ port : "3306",
+user : "root" ,
+password  : "",
+database : "musicians"
+})
+
+connection.connect((err)=>{
+if (err){
+console.log(err , "\n Failed");
+}else{ console.log( "connected succesfully")
+}})
+
+
+connection.query('SELECT * FROM Musicians', (err, results) => {
+  if (err) throw err;
+  console.log(results);
+});
+
+
+app.use(express.json())
+app.post("/signup", (req, res, next) => {
+    const { name, street, city, phone } = req.body;
+
+    const query = `INSERT INTO Musicians (name, street, city, phone) VALUES (?, ?, ?, ?)`;
+
+    connection.execute(query, [name, street, city, phone], (err, result) => {
+        if (err) {
+            console.error("Database Error:", err);
+            return res.status(500).json({ error: err.message });
+        }
+
+        console.log("Musician inserted successfully:", result);
+        return res.status(201).json({
+            message: "Musician registered successfully",
+            musicianId: result.insertId
+        });
+    });
+});app.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});
